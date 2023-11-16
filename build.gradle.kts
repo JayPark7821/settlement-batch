@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.8.22"
     kotlin("plugin.spring") version "1.8.22"
     kotlin("plugin.jpa") version "1.8.22"
+    kotlin("kapt") version "1.8.22"
 }
 
 group = "kr.jay"
@@ -20,6 +21,14 @@ repositories {
 }
 
 dependencies {
+    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta") // QueryDSL JPA 모듈 의존성 추가
+    kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
+
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
