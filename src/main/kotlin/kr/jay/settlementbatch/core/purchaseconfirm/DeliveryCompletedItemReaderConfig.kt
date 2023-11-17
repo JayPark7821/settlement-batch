@@ -4,6 +4,8 @@ import kr.jay.settlementbatch.domain.entity.order.OrderItem
 import kr.jay.settlementbatch.infrastructure.database.repository.OrderItemRepository
 import org.springframework.batch.item.data.RepositoryItemReader
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder
+import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Sort
@@ -36,14 +38,13 @@ class DeliveryCompletedItemReaderConfig {
     )
 
      @Bean
-     fun deliveryCompletedJpaItemReader(orderItemRepository: OrderItemRepository): RepositoryItemReader<OrderItem> {
-         return RepositoryItemReaderBuilder<OrderItem>()
+     fun deliveryCompletedJpaItemReader(orderItemRepository: OrderItemRepository): JpaPagingItemReader<OrderItem> {
+         val queryProvider = DeliveryCompletedJpaQueryProvider(startDateTime, endDateTime)
+
+         return JpaPagingItemReaderBuilder<OrderItem>()
              .name("deliveryCompletedJpaItemReader")
-             .repository(orderItemRepository)
-             .methodName("findByShippedCompleteAtBetween")
-             .arguments(startDateTime, endDateTime)
              .pageSize(this.chunkSize)
-             .sorts(mapOf("shippedCompleteAt" to Sort.Direction.ASC))
+             .queryProvider(queryProvider)
              .build()
      }
 }
