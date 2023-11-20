@@ -1,5 +1,6 @@
 package kr.jay.settlementbatch.domain.entity.settlement
 import jakarta.persistence.*
+import kr.jay.settlementbatch.domain.enums.TaxType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -24,7 +25,7 @@ data class SettlementDaily(
     @Column(nullable = false)
     val sellerName: String,
     val sellerBusinessNumber: Int?,
-    val taxType: String? = "TAX",
+    val taxType: TaxType? = TaxType.TAX,
     val sellType: String? = "CONSIGNMENT",
     @Column(nullable = false)
     val pgSalesAmount: BigDecimal? = BigDecimal.ZERO,

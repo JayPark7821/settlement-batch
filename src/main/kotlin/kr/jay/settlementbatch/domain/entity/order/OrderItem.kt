@@ -21,6 +21,6 @@ data class OrderItem(
         @JoinColumn(name = "order_no")
         var order: Order,
         @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "order_item_snapshot_no")
+        @JoinColumn(name = "order_item_snapshot_no", referencedColumnName = "id", insertable = false, updatable = false)
         var orderItemSnapshot: OrderItemSnapshot
 )
