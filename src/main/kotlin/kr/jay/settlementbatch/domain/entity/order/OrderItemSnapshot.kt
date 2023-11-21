@@ -3,6 +3,7 @@ import jakarta.persistence.*
 import kr.jay.settlementbatch.domain.entity.Product
 import kr.jay.settlementbatch.domain.entity.Seller
 import kr.jay.settlementbatch.domain.enums.TaxType
+import kr.jay.settlementbatch.domain.enums.TaxTypeConverter
 import java.math.BigDecimal
 import java.time.ZonedDateTime
 
@@ -20,9 +21,11 @@ data class OrderItemSnapshot(
         var supplyPrice: BigDecimal? = BigDecimal.ZERO,
         var promotionAmount: BigDecimal? = BigDecimal.ZERO,
         var defaultDeliveryAmount: BigDecimal? = BigDecimal.valueOf(3000),
+        val mileageUsageAmount: BigDecimal? = BigDecimal.ZERO,
 
         var itemCategory: Int? = 0, //TODO : Enum으로 변경
         var taxRate: Int? = 3,
+        @Convert(converter = TaxTypeConverter::class)
         var taxType: TaxType? = TaxType.TAX,
 
         @ManyToOne(fetch = FetchType.LAZY)
