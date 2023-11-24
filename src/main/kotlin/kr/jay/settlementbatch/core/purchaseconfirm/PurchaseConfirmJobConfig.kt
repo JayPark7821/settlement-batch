@@ -1,8 +1,10 @@
 package kr.jay.settlementbatch.core.purchaseconfirm
 
+import kr.jay.settlementbatch.domain.entity.claim.ClaimItem
 import kr.jay.settlementbatch.domain.entity.order.OrderItem
 import kr.jay.settlementbatch.domain.entity.settlement.SettlementDaily
 import kr.jay.settlementbatch.infrastructure.database.repository.OrderItemRepository
+import kr.jay.settlementbatch.infrastructure.database.repository.SettlementDailyRepository
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -36,6 +38,9 @@ class PurchaseConfirmJobConfig(
     private val deliveryCompletedJpaItemReader: JpaPagingItemReader<OrderItem>,
     @Qualifier("dailySettlementJpaItemReader")
     private val dailySettlementJpaItemReader: JpaPagingItemReader<OrderItem>,
+    @Qualifier("claimSettlementJpaItemReader")
+    private val claimSettlementJpaItemReader: JpaPagingItemReader<ClaimItem>,
+    private val settlementDailyRepository: SettlementDailyRepository
 ) {
     private val JOB_NAME = "purchaseConfirmJob"
     private val chunkSize = 500
@@ -45,6 +50,7 @@ class PurchaseConfirmJobConfig(
         return JobBuilder(JOB_NAME, jobRepository)
             .start(purchaseConfirmJobStep())
             .next(dailySettlementJobStep())
+            .next(claimSettlementJobStep())
             .build()
 
     }
@@ -78,6 +84,7 @@ class PurchaseConfirmJobConfig(
             .chunk<OrderItem, SettlementDaily>(this.chunkSize, transactionManager)
             .reader(dailySettlementJpaItemReader)
             .processor(dailySettlementItemProcessor())
+            .writer(dailySettlementItemWriter())
             .build()
     }
 
@@ -85,4 +92,19 @@ class PurchaseConfirmJobConfig(
     fun dailySettlementItemProcessor(): DailySettlementItemProcessor{
         return DailySettlementItemProcessor()
     }
+
+    @Bean
+    fun dailySettlementItemWriter(): DailySettlementItemWriter {
+        return DailySettlementItemWriter(settlementDailyRepository)
+    }
+
+    @Bean
+    @JobScope
+    fun claimSettlementJobStep(): Step{
+        return StepBuilder(JOB_NAME + "_claimSettlement_step", jobRepository)
+            .chunk<ClaimItem, SettlementDaily>(this.chunkSize, transactionManager)
+            .reader(claimSettlementJpaItemReader)
+            .build()
+    }
+
 }
