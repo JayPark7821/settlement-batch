@@ -1,5 +1,6 @@
 package kr.jay.settlementbatch.core.purchaseconfirm
 
+import kr.jay.settlementbatch.core.purchaseconfirm.claim.ClaimSettlementItemProcessor
 import kr.jay.settlementbatch.domain.entity.claim.ClaimItem
 import kr.jay.settlementbatch.domain.entity.order.OrderItem
 import kr.jay.settlementbatch.domain.entity.settlement.SettlementDaily
@@ -104,7 +105,13 @@ class PurchaseConfirmJobConfig(
         return StepBuilder(JOB_NAME + "_claimSettlement_step", jobRepository)
             .chunk<ClaimItem, SettlementDaily>(this.chunkSize, transactionManager)
             .reader(claimSettlementJpaItemReader)
+            .processor(claimSettlementItemProcessor())
             .build()
+    }
+
+    @Bean
+    fun claimSettlementItemProcessor(): ClaimSettlementItemProcessor{
+        return ClaimSettlementItemProcessor()
     }
 
 }

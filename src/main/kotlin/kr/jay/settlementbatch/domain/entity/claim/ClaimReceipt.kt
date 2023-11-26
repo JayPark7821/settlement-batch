@@ -15,9 +15,9 @@ data class ClaimReceipt(
     val deletedAt: ZonedDateTime? = null,
     val completedAt: ZonedDateTime? = null,
 
-    val requestType: String, //TODO ENUM으로
+    val requestType: ClaimType,
     @Convert(converter = ClaimStatusConverter::class)
-    val claimStatus: ClaimStatus, //TODO ENUM으로
-    val extraFeePayer: Int, //TODO ENUM으로
+    val claimStatus: ClaimStatus,
+    val extraFeePayer: ExtraFeePayer,
     val claimReason: Int, //TODO ENUM으로
 )
