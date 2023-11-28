@@ -43,10 +43,15 @@ class TotalSettlementJobConfig(
     }
 
     @Bean
+    @JobScope
     fun totalSettlementJobStep(): Step{
         return StepBuilder(JOB_NAME+"_step", jobRepository)
             .chunk<SummingSettlementResponse, SettlementTotal>(this.chunkSize, this.transactionManager)
             .reader(totalSettlementJpaPagingItemReader)
+            .processor(totalSettlementItemProcessor())
             .build()
      }
+
+    @Bean
+    fun totalSettlementItemProcessor() = TotalSettlementItemProcessor()
 }
