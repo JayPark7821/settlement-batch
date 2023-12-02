@@ -66,6 +66,8 @@ class PurchaseConfirmJobConfig(
             .reader(deliveryCompletedJpaItemReader)
             .processor(purchaseConfirmProcessor())
             .writer(purchaseConfirmItemWriter())
+            .listener(PurchaseConfirmedChunkListener())
+            .allowStartIfComplete(true)
             .build()
     }
 

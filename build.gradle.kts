@@ -28,6 +28,7 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("net.gpedro.integrations.slack:slack-webhook:1.4.0")
 
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
