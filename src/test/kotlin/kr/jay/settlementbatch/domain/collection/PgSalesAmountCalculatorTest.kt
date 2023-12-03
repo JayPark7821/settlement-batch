@@ -37,12 +37,44 @@ class PgSalesAmountCalculatorTest {
         ),
     )
 
+    private val samplePgAmountMaterial = PgSalesAmountMaterial(
+        BigDecimal.valueOf(10000.000),
+        BigDecimal.valueOf(0.000),
+        BigDecimal.valueOf(0.000),
+    )
+
+
     @DisplayName("프로모션(쿠폰)도 없고, 적립금 사용도 없는 경우")
     @Test
     fun test1() {
-        val calculator = PgSalesAmountCalculator(sampleItemSnapshot)
+        val calculator = PgSalesAmountCalculator(samplePgAmountMaterial)
         val pgSalesAmount = calculator.getPgSalesAmount()
 
         Assertions.assertEquals(pgSalesAmount, BigDecimal.valueOf(10000.000))
+    }
+
+    @DisplayName("프로모션이 일부 발생 (1000), 적립금 사용 없는 경우")
+    @Test
+    fun test2(){
+        val pgSalesAmountMaterial= samplePgAmountMaterial.copy(
+            promotionAmount = BigDecimal.valueOf(1000.000),
+        )
+        val calculator = PgSalesAmountCalculator(pgSalesAmountMaterial)
+        val pgSalesAmount = calculator.getPgSalesAmount()
+
+        Assertions.assertEquals(pgSalesAmount, BigDecimal.valueOf(9000.000))
+    }
+
+    @DisplayName("프로모션이 일부 발생 (1000), 적립금 사용이 나머지인 경우")
+    @Test
+    fun test3(){
+        val pgSalesAmountMaterial= samplePgAmountMaterial.copy(
+            promotionAmount = BigDecimal.valueOf(1000.000),
+            mileageUsageAmount = BigDecimal.valueOf(9000.000),
+        )
+        val calculator = PgSalesAmountCalculator(pgSalesAmountMaterial)
+        val pgSalesAmount = calculator.getPgSalesAmount()
+
+        Assertions.assertEquals(pgSalesAmount, BigDecimal.valueOf(0.000))
     }
 }

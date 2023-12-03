@@ -1,5 +1,6 @@
 package kr.jay.settlementbatch.domain.collection
 
+import kr.jay.settlementbatch.domain.command.PgSalesAmountMaterial
 import kr.jay.settlementbatch.domain.entity.order.OrderItemSnapshot
 import java.math.BigDecimal
 
@@ -11,13 +12,14 @@ import java.math.BigDecimal
  * @since 11/21/23
  */
 class PgSalesAmountCalculator(
-    private val orderItemSnapshot: OrderItemSnapshot,
+//    private val orderItemSnapshot: OrderItemSnapshot,
+    private val pgSalesAmountMaterial: PgSalesAmountMaterial,
 ) {
 
     fun  getPgSalesAmount(): BigDecimal {
-        val sellPrice = orderItemSnapshot.sellPrice ?: BigDecimal.ZERO
+        val sellPrice = pgSalesAmountMaterial.sellPrice ?: BigDecimal.ZERO
         return sellPrice
-            .subtract(orderItemSnapshot.promotionAmount)
-            .subtract(orderItemSnapshot.mileageUsageAmount)
+            .subtract(pgSalesAmountMaterial.promotionAmount)
+            .subtract(pgSalesAmountMaterial.mileageUsageAmount)
     }
 }

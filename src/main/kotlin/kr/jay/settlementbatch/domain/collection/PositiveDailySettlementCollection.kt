@@ -1,7 +1,9 @@
 package kr.jay.settlementbatch.domain.collection
 
+import kr.jay.settlementbatch.domain.command.PgSalesAmountMaterial
 import kr.jay.settlementbatch.domain.entity.order.OrderItem
 import kr.jay.settlementbatch.domain.entity.settlement.SettlementDaily
+import java.math.BigDecimal
 import java.time.LocalDate
 
 /**
@@ -22,8 +24,12 @@ class PositiveDailySettlementCollection(
         val seller = orderItemSnapshot.seller
         val taxCalculator = TaxCalculator(orderItemSnapshot)
         val taxAmount = taxCalculator.getTaxAmount().multiply(countToBigDecimal)
-
-        val pgCalculator = PgSalesAmountCalculator(orderItemSnapshot)
+        val pgSalesAmountMaterial = PgSalesAmountMaterial(
+            sellPrice = orderItemSnapshot.sellPrice,
+            promotionAmount = orderItemSnapshot.promotionAmount,
+            mileageUsageAmount = orderItemSnapshot.mileageUsageAmount,
+        )
+        val pgCalculator = PgSalesAmountCalculator(pgSalesAmountMaterial)
         val pgSalesAmount = pgCalculator.getPgSalesAmount().multiply(countToBigDecimal)
 
         val commissionAmountCalculator = CommissionAmountCalculator(orderItemSnapshot)
