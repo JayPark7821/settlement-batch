@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration
  * @version 1.0.0
  * @since 11/27/23
  */
-@Configuration
 class ClaimSettlementItemWriter(
     private val settlementDailyRepository: SettlementDailyRepository
 ) : ItemWriter<SettlementDaily>{

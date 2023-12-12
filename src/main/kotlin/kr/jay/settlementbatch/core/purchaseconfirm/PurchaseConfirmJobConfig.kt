@@ -89,6 +89,7 @@ class PurchaseConfirmJobConfig(
             .reader(dailySettlementJpaItemReader)
             .processor(dailySettlementItemProcessor())
             .writer(dailySettlementItemWriter())
+            .allowStartIfComplete(true)
             .build()
     }
 

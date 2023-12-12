@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration
  * @since 11/24/23
  */
 
-@Configuration
 class DailySettlementItemWriter(
     private val settlementDailyRepository: SettlementDailyRepository
 ): ItemWriter<SettlementDaily> {

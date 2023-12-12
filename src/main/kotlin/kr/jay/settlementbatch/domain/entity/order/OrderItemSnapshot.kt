@@ -9,29 +9,38 @@ import java.time.ZonedDateTime
 
 @Entity
 data class OrderItemSnapshot(
-        @Id @Column(name = "order_item_snapshot_no") var id: Long,
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "order_item_snapshot_no")
+        val id: Long? = null,
 
-        var createdAt: ZonedDateTime? = ZonedDateTime.now(),
-        var updatedAt: ZonedDateTime? = ZonedDateTime.now(),
-        var deletedAt: ZonedDateTime? = null,
+        val createdAt: ZonedDateTime? = ZonedDateTime.now(),
+        val updatedAt: ZonedDateTime? = ZonedDateTime.now(),
+        val deletedAt: ZonedDateTime? = null,
 
-        var productNo: Long,
-        var sellerNo: Long,
-        var sellPrice: BigDecimal? = BigDecimal.ZERO,
-        var supplyPrice: BigDecimal? = BigDecimal.ZERO,
-        var promotionAmount: BigDecimal? = BigDecimal.ZERO,
-        var defaultDeliveryAmount: BigDecimal? = BigDecimal.valueOf(3000),
+        @Column(name = "product_no")
+        val productNo: Long,
+
+        @Column(name = "seller_no")
+        val sellerNo: Long,
+
+        val sellPrice: BigDecimal? = BigDecimal.ZERO,
+        val supplyPrice: BigDecimal? = BigDecimal.ZERO,
+        val promotionAmount: BigDecimal? = BigDecimal.ZERO,
+        val defaultDeliveryAmount: BigDecimal? = BigDecimal.valueOf(3000),
         val mileageUsageAmount: BigDecimal? = BigDecimal.ZERO,
 
-        var itemCategory: Int? = 0, //TODO : Enum으로 변경
-        var taxRate: Int? = 3,
-        @Convert(converter = TaxTypeConverter::class)
-        var taxType: TaxType? = TaxType.TAX,
+        val itemCategory: Int? = 0, //TODO : Enum으로 변경
+        val taxRate: Int? = 3,
 
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name="product_no")
-        var product: Product,
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name="seller_no", referencedColumnName = "id", insertable = false, updatable = false)
-        var seller: Seller,
+        @Convert(converter = TaxTypeConverter::class)
+        val taxType: TaxType? = TaxType.TAX,
+
+        @ManyToOne
+        @JoinColumn(name = "seller_no", insertable = false, updatable = false)
+        val seller: Seller,
+
+        @ManyToOne
+        @JoinColumn(name = "product_no", insertable = false, updatable = false)
+        val product: Product,
 )
