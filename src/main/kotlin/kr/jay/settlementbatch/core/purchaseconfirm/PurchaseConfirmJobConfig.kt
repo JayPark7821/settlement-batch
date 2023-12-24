@@ -1,5 +1,6 @@
 package kr.jay.settlementbatch.core.purchaseconfirm
 
+import jakarta.persistence.EntityManager
 import kr.jay.settlementbatch.core.purchaseconfirm.claim.ClaimSettlementItemProcessor
 import kr.jay.settlementbatch.core.purchaseconfirm.claim.ClaimSettlementItemWriter
 import kr.jay.settlementbatch.domain.entity.claim.ClaimItem
@@ -15,12 +16,18 @@ import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.data.RepositoryItemReader
+import org.springframework.batch.item.database.JdbcBatchItemWriter
+import org.springframework.batch.item.database.JpaItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 /**
  * PurchaseConfirmJobConfig
@@ -42,7 +49,9 @@ class PurchaseConfirmJobConfig(
     private val dailySettlementJpaItemReader: JpaPagingItemReader<OrderItem>,
     @Qualifier("claimSettlementJpaItemReader")
     private val claimSettlementJpaItemReader: JpaPagingItemReader<ClaimItem>,
-    private val settlementDailyRepository: SettlementDailyRepository
+    private val settlementDailyRepository: SettlementDailyRepository,
+    private val datasource: DataSource,
+    private val entityManager: EntityManager
 ) {
     private val JOB_NAME = "purchaseConfirmJob"
     private val chunkSize = 500
@@ -65,7 +74,9 @@ class PurchaseConfirmJobConfig(
             .chunk<OrderItem, OrderItem>(this.chunkSize, transactionManager)
             .reader(deliveryCompletedJpaItemReader)
             .processor(purchaseConfirmProcessor())
-            .writer(purchaseConfirmItemWriter())
+//            .writer(purchaseConfirmItemWriter())
+            .writer(purchaseConfirmedJdbcItemWriter())
+//            .writer(purchaseConfirmedJpaItemWriter())
             .listener(PurchaseConfirmedChunkListener())
             .allowStartIfComplete(true)
             .build()
@@ -74,6 +85,35 @@ class PurchaseConfirmJobConfig(
     @Bean
     fun purchaseConfirmProcessor(): PurchaseConfirmProcessor {
         return PurchaseConfirmProcessor()
+    }
+
+    @Bean
+    fun purchaseConfirmedJdbcItemWriter(): JdbcBatchItemWriter<OrderItem> {
+        val writer = JdbcBatchItemWriterBuilder<OrderItem>()
+            .dataSource(datasource)
+            .sql(
+                "update order_item " +
+                        "set purchase_confirmed_at = :purchasedConfirmedAt, " +
+                        "updated_at = :updatedAt " +
+                        "where order_item_no = :id"
+            )
+            .itemSqlParameterSourceProvider { it ->
+                val parameterSource = MapSqlParameterSource()
+                parameterSource.addValue("purchasedConfirmedAt", ZonedDateTime.now())
+                parameterSource.addValue("updatedAt", ZonedDateTime.now())
+                parameterSource.addValue("id", it.id)
+                parameterSource
+            }
+            .build()
+
+        return writer
+    }
+
+    @Bean
+    fun purchaseConfirmedJpaItemWriter(): JpaItemWriter<OrderItem>{
+        val writer = JpaItemWriter<OrderItem>()
+        writer.setEntityManagerFactory(this.entityManager.entityManagerFactory)
+        return writer
     }
 
     @Bean
@@ -94,7 +134,7 @@ class PurchaseConfirmJobConfig(
     }
 
     @Bean
-    fun dailySettlementItemProcessor(): DailySettlementItemProcessor{
+    fun dailySettlementItemProcessor(): DailySettlementItemProcessor {
         return DailySettlementItemProcessor()
     }
 
@@ -105,7 +145,7 @@ class PurchaseConfirmJobConfig(
 
     @Bean
     @JobScope
-    fun claimSettlementJobStep(): Step{
+    fun claimSettlementJobStep(): Step {
         return StepBuilder(JOB_NAME + "_claimSettlement_step", jobRepository)
             .chunk<ClaimItem, SettlementDaily>(this.chunkSize, transactionManager)
             .reader(claimSettlementJpaItemReader)
@@ -115,12 +155,12 @@ class PurchaseConfirmJobConfig(
     }
 
     @Bean
-    fun claimSettlementItemProcessor(): ClaimSettlementItemProcessor{
+    fun claimSettlementItemProcessor(): ClaimSettlementItemProcessor {
         return ClaimSettlementItemProcessor()
     }
 
     @Bean
-    fun claimSettlementItemWriter(): ClaimSettlementItemWriter{
+    fun claimSettlementItemWriter(): ClaimSettlementItemWriter {
         return ClaimSettlementItemWriter(settlementDailyRepository)
     }
 }
